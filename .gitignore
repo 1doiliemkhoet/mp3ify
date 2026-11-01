@@ -1,0 +1,24 @@
+# Generated files / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+build/
+dist/
+*.spec
+
+# Local media: do not accidentally commit personal videos or audio
+*.mp4
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.mov
+*.mkv
+
+# Local environment and OS files
+.env
+.env.*
+.DS_Store
+Thumbs.db

@@ -1,8 +1,10 @@
-# mp3ify v1.0.1 — Công cụ chuyển MP4 sang MP3 trên Windows CMD
+# mp3ify v1.1.0 — MP4 → MP3 hoặc trích xuất audio gốc
 
 **Offline, không tải video lên mạng.** Một công cụ CLI cá nhân như `yt-dlp`, nhưng dành cho file MP4 đã có trên máy. Sử dụng Python 3 (thư viện chuẩn) và FFmpeg.
 
-**Cập nhật v1.0.1:** Sửa lỗi tên file chứa dấu `[` `]` và ký tự Unicode. Nếu đã cài v1.0, giải nén ZIP mới rồi chạy lại `install.cmd` để cập nhật.
+**Mới trong v1.1.0:** `--best` trích xuất nguyên luồng âm thanh gốc (`-c:a copy`), không chuyển mã, tự chọn đuôi file theo codec: AAC/ALAC → `.m4a`, MP3 → `.mp3`, Opus → `.opus`, Vorbis → `.ogg`, FLAC → `.flac`; codec ít gặp → `.mka`. Tùy chọn này **không nâng chất lượng file nguồn** và **không nhất thiết xuất ra MP3**. Bản v1.0.1 trước đó đã sửa tên file Unicode và `[...]`.
+
+**Đã cài bản cũ?** Clone/pull source mới rồi chạy `install.cmd` thêm lần nữa để cập nhật bản đã cài.
 
 ## 1. Cài 2 thành phần cần thiết
 
@@ -11,6 +13,7 @@ Mở CMD hoặc PowerShell:
 ```bat
 python --version
 ffmpeg -version
+ffprobe -version
 ```
 
 Nếu chưa có Python, có thể cài với:
@@ -60,6 +63,12 @@ mp3ify "D:\Videos" -r
 :: Chuyển cả thư mục, xuất ra thư mục khác, giữ cây thư mục con
 mp3ify "D:\Videos" -r -d "D:\MP3"
 
+:: Trích xuất nguyên audio không mã hóa lại (AAC -> M4A, MP3 -> MP3...)
+mp3ify "demo.mp4" --best
+
+:: Chuyển 1 thư mục, giữ nguyên codec audio từng video
+mp3ify "D:\Videos" -r --best -d "D:\Audio"
+
 :: MP3 chất lượng cao cố định 320 kbps
 mp3ify "demo.mp4" -b 320
 
@@ -78,23 +87,27 @@ mp3ify "D:\Videos" -r --dry-run
 | Tùy chọn | Ý nghĩa |
 |---|---|
 | `-h`, `--help` | Hướng dẫn |
-| `-o`, `--output` | File MP3 đầu ra (chỉ dùng khi chuyển 1 file) |
-| `-d`, `--out-dir` | Thư mục chứa MP3 |
+| `-o`, `--output` | Tên file đầu ra (với `--best`, phải đúng đuôi theo codec nguồn) |
+| `-d`, `--out-dir` | Thư mục chứa file âm thanh đầu ra |
 | `-r`, `--recursive` | Quét cả thư mục con |
 | `-q`, `--quality` | Chất lượng MP3 VBR từ 0 đến 9; mặc định `2` (cao) |
-| `-b`, `--bitrate` | Bitrate cố định, ví dụ `192`, `320` (kbps) |
+| `-b`, `--bitrate` | Bitrate MP3 cố định, ví dụ `192`, `320` (kbps) |
+| `--best` | Giữ nguyên bitstream âm thanh; tự chọn định dạng đầu ra, cần `ffprobe` |
 | `--track N` | Audio track thứ N (tính từ 0) |
-| `-y`, `--overwrite` | Ghi đè MP3 đã tồn tại |
+| `-y`, `--overwrite` | Ghi đè file đầu ra đã tồn tại |
 | `--dry-run` | Chỉ hiển thị kế hoạch, không tạo file |
 
 ## 4. Lưu ý
 
 - Không tự ý xóa hoặc sửa file MP4 gốc.
-- Mặc định **bỏ qua** MP3 đã tồn tại; dùng `-y` để thay thế.
-- Có bảo vệ file đầu ra: FFmpeg mã hóa sang file MP3 tạm, chỉ đổi tên khi chuyển đổi thành công.
+- Mặc định **bỏ qua** file đầu ra đã tồn tại; dùng `-y` để thay thế.
+- Có bảo vệ file đầu ra: FFmpeg ghi sang file tạm cùng định dạng, chỉ đổi tên khi chuyển đổi thành công.
 - Mặc định lấy track audio đầu tiên; nếu video không có audio, CLI báo lỗi.
-- Không thể nâng chất lượng audio nguồn thấp bằng cách xuất 320 kbps.
-- Không bao gồm ffmpeg.exe trong ZIP. Nếu muốn dùng bản portable, có thể đặt `ffmpeg.exe` cùng thư mục `mp3ify.py` (với bản cài: `%LOCALAPPDATA%\Programs\mp3ify`).
+- Không thể nâng chất lượng audio nguồn thấp bằng cách xuất 320 kbps. `--best` giữ nguyên dữ liệu nén đã có, không tạo âm thanh lossless nếu nguồn là AAC/MP3.
+- `--best` không dùng chung với `-q` hay `-b`: đây là chế độ **copy**, không mã hóa MP3. File đầu ra có thể là `.m4a`, `.opus`, `.mka`..., cần trình phát hỗ trợ.
+- `--best` dùng `ffprobe` (đi kèm FFmpeg) để phát hiện codec; `--track N` dùng để chọn luồng cần trích xuất. Với codec chưa biết, output `.mka` để ưu tiên bảo toàn stream.
+- `--best -o "song.mp3"` sẽ báo lỗi nếu codec nguồn là AAC (phải đặt tên `.m4a`); không bao giờ đổi đuôi giả thành MP3.
+- Không bao gồm FFmpeg/ffprobe trong ZIP. Nếu muốn dùng bản portable, đặt `ffmpeg.exe` **và** `ffprobe.exe` cùng thư mục `mp3ify.py` (hoặc bên cạnh file `.exe` nếu đã build).
 - Khi nhiều file trùng tên được đẩy vào cùng thư mục `-d`, CLI sẽ bỏ qua file đầu ra đã có (trừ khi `-y`).
 
 ## 5. Gỡ cài đặt
@@ -110,23 +123,16 @@ python -m pip install pyinstaller
 python -m PyInstaller --onefile --console --name mp3ify mp3ify.py
 ```
 
-File `dist\mp3ify.exe` sẽ chạy mà không cần cài Python. Vẫn cần FFmpeg trong PATH hoặc đặt `ffmpeg.exe` cạnh `mp3ify.exe`.
+File `dist\mp3ify.exe` chạy mà không cần cài Python. Vẫn cần FFmpeg/ffprobe trong PATH hoặc đặt cả hai `.exe` bên cạnh `mp3ify.exe`.
 
-## 7. Lấy mã nguồn từ GitHub
-
-Repository: https://github.com/1doiliemkhoet/mp3ify
-
+## 7. Cập nhật bản cài từ GitHub
 
 ```cmd
-git clone https://github.com/1doiliemkhoet/mp3ify.git
-cd mp3ify
+git -C C:\mp3ify\mp3ify pull --ff-only
+cd /d C:\mp3ify\mp3ify
 install.cmd
 ```
 
-Để chạy unit tests:
+Mở CMD mới, kiểm tra `mp3ify --version` (kết quả `1.1.0`).
 
-```cmd
-python -m unittest discover -s tests -v
-```
-
-Các file `publish-github.*` chỉ dùng để tạo repo lần đầu và cố ý từ chối ghi đè repo đã tồn tại. Repo này đã được tạo và có mã nguồn trên nhánh `main`.
+Source repository: https://github.com/1doiliemkhoet/mp3ify

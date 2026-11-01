@@ -13,7 +13,7 @@ echo.
 echo [OK] mp3ify installed to "%DEST%"
 echo Open a NEW CMD / PowerShell window and run: mp3ify --help
 echo.
-echo Prerequisites: Python 3 and FFmpeg in PATH.
+echo Prerequisites: Python 3, FFmpeg and FFprobe in PATH.
 exit /b 0
 :error
 echo [ERROR] Installation failed. You can also run mp3ify.cmd directly from this folder.

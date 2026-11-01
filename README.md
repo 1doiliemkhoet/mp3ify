@@ -112,28 +112,21 @@ python -m PyInstaller --onefile --console --name mp3ify mp3ify.py
 
 File `dist\mp3ify.exe` sẽ chạy mà không cần cài Python. Vẫn cần FFmpeg trong PATH hoặc đặt `ffmpeg.exe` cạnh `mp3ify.exe`.
 
-## 7. Đưa source lên GitHub
+## 7. Lấy mã nguồn từ GitHub
 
-Gói `mp3ify-github-ready-v1.0.1.zip` có sẵn `.gitignore`, workflow chạy unit tests trên GitHub Actions và script `publish-github.cmd` để tự tạo repository bằng GitHub CLI.
+Repository: https://github.com/1doiliemkhoet/mp3ify
 
-1. Cài Git và GitHub CLI trên Windows nếu chưa có:
-   ```cmd
-   winget install -e --id Git.Git
-   winget install -e --id GitHub.cli
-   ```
-2. Đóng CMD, mở CMD mới và đăng nhập (bằng trình duyệt, không gửi token cho ai):
-   ```cmd
-   gh auth login
-   ```
-3. Giải nén gói, mở CMD tại thư mục có `publish-github.cmd`, chạy:
-   ```cmd
-   publish-github.cmd
-   ```
-
-Script sẽ kiểm tra tài khoản **`1doiliemkhoet`**, tạo repo **`1doiliemkhoet/mp3ify`** dạng **private** và push branch `main`. Nếu muốn công khai nguồn:
 
 ```cmd
-publish-github.cmd Public
+git clone https://github.com/1doiliemkhoet/mp3ify.git
+cd mp3ify
+install.cmd
 ```
 
-Nếu repo đã tồn tại, script dừng để tránh ghi đè nội dung. Link repository sau khi tạo thành công: `https://github.com/1doiliemkhoet/mp3ify`.
+Để chạy unit tests:
+
+```cmd
+python -m unittest discover -s tests -v
+```
+
+Các file `publish-github.*` chỉ dùng để tạo repo lần đầu và cố ý từ chối ghi đè repo đã tồn tại. Repo này đã được tạo và có mã nguồn trên nhánh `main`.
